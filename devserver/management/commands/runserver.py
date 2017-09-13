@@ -59,6 +59,7 @@ class Command(BaseCommand):
         super(Command, self).__init__()
 
     def add_arguments(self, parser):
+        super(Command, self).add_arguments(parser)
         parser.add_argument('--werkzeug', action='store_true', dest='use_werkzeug', default=False,
                             help='Tells Django to use the Werkzeug interactive debugger.')
         parser.add_argument('--forked', action='store_true', dest='use_forked', default=False,
@@ -73,17 +74,13 @@ class Command(BaseCommand):
                                 help='Tells Django to NOT automatically serve static files at STATIC_URL.')
 
     def run_from_argv(self, argv):
-        parser = self.create_parser(argv[0], argv[1])
         default_args = getattr(settings, 'DEVSERVER_ARGS', None)
         if default_args:
-            options, args = parser.parse_args(default_args)
-        else:
-            options = None
+            for x in default_args:
+                if x not in argv:
+                    argv.append(x)
 
-        options, args = parser.parse_args(argv[2:], options)
-
-        handle_default_options(options)
-        self.execute(*args, **options.__dict__)
+        super(Command, self).run_from_argv(argv)
 
     def handle(self, addrport='', *args, **options):
         if args:
@@ -144,7 +141,8 @@ class Command(BaseCommand):
                 debug.technical_500_response = null_technical_500_response
 
         self.stdout.write("Validating models...\n\n")
-        self.validate(display_num_errors=True)
+        self.check(display_num_errors=True)
+        self.check_migrations()
         self.stdout.write((
             "Django version %(version)s, using settings %(settings)r\n"
             "Running django-devserver %(devserver_version)s\n"
