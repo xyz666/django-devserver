@@ -1,3 +1,10 @@
+-----------------------
+To install this version
+-----------------------
+
+	pip install https://github.com/xyz666/django-devserver/archive/master.zip
+    
+    
 -----
 About
 -----
